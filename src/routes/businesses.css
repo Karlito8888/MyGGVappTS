@@ -1,0 +1,15 @@
+/* Businesses Page Styles - Mobile First */
+
+.businesses-description {
+	font-size: 1rem;
+	color: #7f8c8d;
+	line-height: 1.5;
+}
+
+/* Responsive Design for larger screens */
+@media (min-width: 769px) {
+	.businesses-description {
+		font-size: 1.125rem;
+		line-height: 1.6;
+	}
+}

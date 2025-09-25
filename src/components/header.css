@@ -1,0 +1,64 @@
+/* Header Styles */
+.app-header {
+	grid-area: header;
+	width: 100%;
+	height: 60px;
+	position: relative;
+	overflow: hidden;
+}
+
+.app-header__content {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	padding: 0 1rem;
+}
+
+.app-header__message {
+	color: white;
+	font-size: 1rem;
+	font-weight: 600;
+	text-align: center;
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3), 0 0
+		8px rgba(0, 0, 0, 0.2);
+	transition: opacity 0.3s ease-in-out;
+}
+
+/* Responsive Design for larger screens */
+@media (min-width: 768px) {
+	.app-header__message {
+		font-size: 1.125rem;
+	}
+}
+
+/* Utility Classes */
+.u-opacity-100 {
+	opacity: 1;
+}
+
+.u-opacity-0 {
+	opacity: 0;
+}
+
+.u-fixed {
+	position: fixed;
+}
+
+.u-z-modal {
+	z-index: 1000;
+}
+
+.u-transition-opacity {
+	transition-property: opacity;
+	transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+	transition-duration: 150ms;
+}
+
+.u-left-3\.5 {
+	left: 3.5rem;
+}
+
+.u-top-11 {
+	top: 2.75rem;
+}

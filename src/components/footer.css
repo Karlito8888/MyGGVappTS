@@ -1,0 +1,15 @@
+/* Footer Component Styles */
+.footer {
+	height: 60px;
+	background-color: #34495e;
+	color: white;
+	flex-shrink: 0;
+}
+
+.footer-content {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	padding: 0 1rem;
+}
