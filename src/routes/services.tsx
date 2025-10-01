@@ -1,18 +1,20 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useServices } from "../hooks/useServices";
-import { servicesQueries } from "../lib/queryFunctions";
-import { queryKeys } from "../lib/queryKeys";
-import { queryClient } from "../providers/QueryClientProvider";
+import { useServices } from "../hooks";
+import { servicesQueries } from "../hooks/entities/useServices";
+import { queryKeys } from "../hooks/utils/queryKeys";
+import { requireAuth, requireOnboarding } from "../lib/routeGuards";
 import "./services.css";
 
 export const Route = createFileRoute("/services")({
+	beforeLoad: async ({ context }) => {
+		await requireAuth(context);
+		await requireOnboarding(context);
+	},
 	component: Services,
-	loader: async ({ abortController }) => {
-		// Ensure data in TanStack Query cache
-		const services = await queryClient.ensureQueryData({
+	loader: async ({ context }) => {
+		const services = await context.queryClient.ensureQueryData({
 			queryKey: queryKeys.services.lists(),
-			queryFn: ({ signal }) =>
-				servicesQueries.getAll(signal || abortController.signal),
+			queryFn: () => servicesQueries.getAll(),
 			staleTime: 1000 * 60 * 5, // 5 minutes
 		});
 
@@ -26,13 +28,20 @@ export const Route = createFileRoute("/services")({
 	),
 	errorComponent: ({ error }) => {
 		const navigate = useNavigate();
+		const { queryClient } = Route.useRouteContext();
+
 		return (
 			<div className="error-container">
 				<h2>⚠️ Error Loading Services</h2>
 				<p>{error.message}</p>
 				<button
 					type="button"
-					onClick={() => navigate({ to: "/services", replace: true })}
+					onClick={async () => {
+						await queryClient.invalidateQueries({
+							queryKey: queryKeys.services.lists(),
+						});
+						navigate({ to: "/services" });
+					}}
 				>
 					Retry
 				</button>
@@ -43,7 +52,9 @@ export const Route = createFileRoute("/services")({
 
 function Services() {
 	// Use optimized hook for services data
-	const { data: services = [] } = useServices();
+	const {
+		all: { services },
+	} = useServices();
 
 	return (
 		<main className="main-content">
@@ -51,7 +62,7 @@ function Services() {
 
 			{services && services.length > 0 ? (
 				<div className="services-grid">
-					{services.map((service) => (
+					{services.map((service: any) => (
 						<div key={service.id} className="service-card">
 							<h3 className="service-title">
 								{service.description || "Service"}

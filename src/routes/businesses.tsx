@@ -1,25 +1,27 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useAllBusinesses } from "../hooks/useBusinesses";
-import { businessesQueries } from "../lib/queryFunctions";
-import { queryKeys } from "../lib/queryKeys";
-import { queryClient } from "../providers/QueryClientProvider";
+import { useBusinesses } from "../hooks";
+import { businessesQueries } from "../hooks/entities/useBusinesses";
+import { queryKeys } from "../hooks/utils/queryKeys";
+import { requireAuth, requireOnboarding } from "../lib/routeGuards";
 import "./businesses.css";
 
 export const Route = createFileRoute("/businesses")({
+	beforeLoad: async ({ context }) => {
+		await requireAuth(context);
+		await requireOnboarding(context);
+	},
 	component: Businesses,
-	loader: async ({ abortController }) => {
+	loader: async ({ context }) => {
 		// Ensure data in TanStack Query cache
 		const [insideBusinesses, outsideBusinesses] = await Promise.all([
-			queryClient.ensureQueryData({
-				queryKey: queryKeys.businesses.inside(),
-				queryFn: ({ signal }) =>
-					businessesQueries.getInside(signal || abortController.signal),
+			context.queryClient.ensureQueryData({
+				queryKey: queryKeys.inside.lists(),
+				queryFn: () => businessesQueries.getInside(),
 				staleTime: 1000 * 60 * 5,
 			}),
-			queryClient.ensureQueryData({
-				queryKey: queryKeys.businesses.outside(),
-				queryFn: ({ signal }) =>
-					businessesQueries.getOutside(signal || abortController.signal),
+			context.queryClient.ensureQueryData({
+				queryKey: queryKeys.outside.lists(),
+				queryFn: () => businessesQueries.getOutside(),
 				staleTime: 1000 * 60 * 5,
 			}),
 		]);
@@ -34,13 +36,23 @@ export const Route = createFileRoute("/businesses")({
 	),
 	errorComponent: ({ error }) => {
 		const navigate = useNavigate();
+		const { queryClient } = Route.useRouteContext();
+
 		return (
 			<div className="error-container">
 				<h2>⚠️ Error Loading Businesses</h2>
 				<p>{error.message}</p>
 				<button
 					type="button"
-					onClick={() => navigate({ to: "/businesses", replace: true })}
+					onClick={async () => {
+						await queryClient.invalidateQueries({
+							queryKey: queryKeys.inside.lists(),
+						});
+						await queryClient.invalidateQueries({
+							queryKey: queryKeys.outside.lists(),
+						});
+						navigate({ to: "/businesses" });
+					}}
 				>
 					Retry
 				</button>
@@ -51,7 +63,7 @@ export const Route = createFileRoute("/businesses")({
 
 function Businesses() {
 	// Use optimized hook for businesses data
-	const { insideBusinesses, outsideBusinesses } = useAllBusinesses();
+	const { insideBusinesses, outsideBusinesses } = useBusinesses().all;
 
 	return (
 		<main className="main-content">
@@ -62,7 +74,7 @@ function Businesses() {
 				<div className="businesses-section">
 					<h3 className="section-title">Businesses Inside GGV</h3>
 					<div className="businesses-grid">
-						{insideBusinesses.map((business) => (
+						{insideBusinesses.map((business: any) => (
 							<div key={business.id} className="business-card">
 								<h4 className="business-name">{business.business_name}</h4>
 								{business.description && (
@@ -88,7 +100,7 @@ function Businesses() {
 				<div className="businesses-section">
 					<h3 className="section-title">Businesses Outside Community</h3>
 					<div className="businesses-grid">
-						{outsideBusinesses.map((business) => (
+						{outsideBusinesses.map((business: any) => (
 							<div key={business.id} className="business-card">
 								<h4 className="business-name">{business.business_name}</h4>
 								{business.description && (

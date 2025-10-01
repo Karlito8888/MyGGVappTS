@@ -5,15 +5,20 @@ import ReactDOM from "react-dom/client";
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
 
+import { supabase } from "./lib/supabase";
+import { AuthProvider } from "./providers/AuthProvider";
 // Import providers
-import { QueryProvider } from "./providers/QueryClientProvider";
+import { QueryProvider, queryClient } from "./providers/QueryClientProvider";
 
 import "./styles.css";
 
 // Create a new router instance
 const router = createRouter({
 	routeTree,
-	context: {},
+	context: {
+		queryClient,
+		supabase,
+	},
 	defaultPreload: "intent",
 	scrollRestoration: true,
 	defaultStructuralSharing: true,
@@ -29,15 +34,19 @@ declare module "@tanstack/react-router" {
 	}
 }
 
+// RouterContext type is already exported above
+
 // Render the app
 const rootElement = document.getElementById("app");
 if (rootElement && !rootElement.innerHTML) {
 	const root = ReactDOM.createRoot(rootElement);
 	root.render(
 		<StrictMode>
-			<QueryProvider>
-				<RouterProvider router={router} />
-			</QueryProvider>
+			<AuthProvider>
+				<QueryProvider>
+					<RouterProvider router={router} />
+				</QueryProvider>
+			</AuthProvider>
 		</StrictMode>,
 	);
 }

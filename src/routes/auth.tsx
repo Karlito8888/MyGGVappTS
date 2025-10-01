@@ -1,43 +1,51 @@
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import ggvLogo from "../assets/img/ggv.png";
+import { redirectIfAuthenticated } from "../lib/routeGuards";
 import { supabase } from "../lib/supabase";
 import "./auth.css";
 
 export const Route = createFileRoute("/auth")({
+	beforeLoad: async ({ context }) => {
+		await redirectIfAuthenticated(context);
+	},
 	component: AuthPage,
 });
 
 function AuthPage() {
+	const navigate = useNavigate();
+
+	// Listen for auth state changes to handle post-authentication redirects
+	useEffect(() => {
+		const {
+			data: { subscription },
+		} = supabase.auth.onAuthStateChange((event, session) => {
+			if (event === "SIGNED_IN" && session) {
+				navigate({ to: "/" });
+			}
+		});
+
+		return () => subscription.unsubscribe();
+	}, [navigate]);
+
 	return (
 		<div className="auth-container">
 			<div className="auth-wrapper">
-				<h2 className="auth-title">Sign in to your account</h2>
+				<img src={ggvLogo} alt="GGV Logo" className="auth-logo" />
 			</div>
 
 			<div className="auth-form-container">
 				<div className="auth-form">
 					<Auth
 						supabaseClient={supabase}
-						appearance={{
-							theme: ThemeSupa,
-							style: {
-								button: {
-									background: "#1f2937",
-									color: "white",
-									borderRadius: "8px",
-								},
-								input: {
-									background: "#374151",
-									color: "white",
-									borderRadius: "8px",
-									border: "1px solid #4b5563",
-								},
-							},
-						}}
+						appearance={{ theme: ThemeSupa }}
 						providers={["google", "facebook"]}
 						socialLayout="horizontal"
 						theme="dark"
+						redirectTo={`${window.location.origin}/`}
+						onlyThirdPartyProviders={false}
 					/>
 				</div>
 			</div>

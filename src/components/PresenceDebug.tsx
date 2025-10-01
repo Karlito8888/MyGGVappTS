@@ -1,8 +1,12 @@
-import { usePresence } from "../hooks/usePresence";
+import { usePresence, useAuth } from "../hooks";
 
 export function PresenceDebug() {
-	const { onlineUsers, onlineCount, isTracking, currentUserOnline } =
+	const { user } = useAuth();
+	const { onlineUsers, isTracking, isUserOnline, onlineUserCount } =
 		usePresence();
+
+	const currentUserOnline = user ? isUserOnline(user.id) : false;
+	const onlineCount = onlineUserCount; // Alias for compatibility
 
 	if (!isTracking) {
 		return <div>Presence tracking not active</div>;
@@ -16,7 +20,7 @@ export function PresenceDebug() {
 			<div>
 				<h4>Online users:</h4>
 				<ul>
-					{onlineUsers.map((user) => (
+					{onlineUsers.map((user: any) => (
 						<li key={user.user_id}>
 							{user.username || "Unknown"} (ID: {user.user_id})
 						</li>

@@ -5,6 +5,11 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts'],
+  },
   plugins: [
     tanstackRouter({ autoCodeSplitting: true }),
     viteReact(),
@@ -16,11 +21,13 @@ export default defineConfig({
         'robots.txt'
       ],
       manifest: {
-        name: 'GGV App',
-        short_name: 'GGV App',
+        name: 'MyGGV',
+        short_name: 'MyGGV',
         description: 'GGV Progressive Web App',
-        theme_color: '#ffffff',
-        background_color: '#ffffff',
+        theme_color: '#0c0c0c',
+        background_color: '#0c0c0c',
+        categories: ['social', 'lifestyle'],
+        lang: 'fr',
         icons: [
           // Android icons
           {
@@ -100,7 +107,11 @@ export default defineConfig({
         ],
         start_url: '/',
         display: 'standalone',
-        orientation: 'portrait',
+        orientation: 'portrait-primary',
+        display_override: ['window-controls-overlay', 'standalone'],
+        edge_side_panel: {
+          preferred_width: 320
+        },
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],

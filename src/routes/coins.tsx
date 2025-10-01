@@ -1,7 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { requireAuth, requireOnboarding } from "../lib/routeGuards";
 import "./coins.css";
 
 export const Route = createFileRoute("/coins")({
+	beforeLoad: async ({ context }) => {
+		await requireAuth(context);
+		await requireOnboarding(context);
+	},
 	component: () => <Coins />,
 });
 

@@ -1,0 +1,3 @@
+# Entity hooks directory
+# This directory contains hooks organized by business entities
+# Each entity has its own hook file with unified CRUD operations

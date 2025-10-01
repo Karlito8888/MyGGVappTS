@@ -1,15 +1,15 @@
 /* Weather Page Styles - Mobile First */
 
 .weather-description {
-	font-size: 1rem;
-	color: #7f8c8d;
+	font-size: var(--font-size-base);
+	color: var(--color-gray);
 	line-height: 1.5;
 }
 
 /* Responsive Design for larger screens */
 @media (min-width: 769px) {
 	.weather-description {
-		font-size: 1.125rem;
+		font-size: var(--font-size-lg);
 		line-height: 1.6;
 	}
 }

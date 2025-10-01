@@ -1,4 +1,5 @@
 import { Link, createFileRoute, getRouteApi } from "@tanstack/react-router";
+import { requireAuth, requireOnboarding } from "../lib/routeGuards";
 import "./posts.css";
 
 interface Post {
@@ -19,6 +20,10 @@ interface Comment {
 const postApi = getRouteApi("/posts/$postId");
 
 export const Route = createFileRoute("/posts/$postId")({
+	beforeLoad: async ({ context }) => {
+		await requireAuth(context);
+		await requireOnboarding(context);
+	},
 	component: PostDetail,
 	loader: async ({ params, abortController }) => {
 		// Check if request was aborted
@@ -73,12 +78,7 @@ function PostDetail() {
 
 	return (
 		<main className="main-content">
-			<Link
-				to="/posts"
-				className="back-link"
-				preload="intent"
-				preloadDelay={100}
-			>
+			<Link to="/posts" className="back-link">
 				← Back to Posts
 			</Link>
 

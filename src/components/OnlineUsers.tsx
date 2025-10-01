@@ -1,8 +1,10 @@
-import { usePresence } from "../hooks/usePresence";
+import { usePresence } from "../hooks";
 import "../components/online-users.css";
 
 export function OnlineUsers() {
-	const { onlineCount, isTracking } = usePresence();
+	const { onlineUserCount, isTracking } = usePresence();
+
+	const onlineCount = onlineUserCount; // Alias for compatibility
 
 	if (!isTracking) {
 		return null;

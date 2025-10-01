@@ -2,13 +2,10 @@ import maplibregl from "maplibre-gl";
 import { useEffect, useRef } from "react";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./map.css";
-import { useAuth } from "../hooks/useAuth";
-import {
-	useAssociatedLocationsWithCoords,
-	useUserLocationIds,
-} from "../hooks/useLocations";
 import houseImage from "../assets/img/house.png";
 import pinImage from "../assets/img/pin.png";
+import { useAuth } from "../hooks";
+import { useAssociatedLocationsWithCoords, useUserLocationIds } from "../hooks";
 
 const MAP_STYLES = {
 	osm: {
@@ -42,13 +39,6 @@ const MAP_STYLES = {
 interface MapProps {
 	style?: React.CSSProperties;
 	className?: string;
-}
-
-interface LocationUser {
-	id: string;
-	name: string;
-	avatar_url?: string;
-	is_owner: boolean;
 }
 
 export default function MapComponent({ style, className }: MapProps) {
@@ -86,13 +76,25 @@ export default function MapComponent({ style, className }: MapProps) {
 
 		// Add markers for each location
 		for (const location of locations) {
-			if (location.lng && location.lat) {
+			// Handle coordinates which might be an object or string
+			let coords: { lat: number; lng: number } | null = null;
+
+			if (
+				typeof location.coordinates === "object" &&
+				location.coordinates !== null
+			) {
+				coords = location.coordinates;
+			} else if (typeof location.coordinates === "string") {
+				try {
+					coords = JSON.parse(location.coordinates);
+				} catch (e) {
+					console.warn("Invalid coordinates format:", location.coordinates);
+				}
+			}
+
+			if (coords?.lat && coords.lng) {
 				// Determine if this location belongs to the current user
-				const isUserLocation =
-					userLocationIds.includes(location.id) ||
-					location.users?.some(
-						(userObj: LocationUser) => userObj.id === user?.id,
-					);
+				const isUserLocation = userLocationIds.includes(location.id);
 
 				// Use different icons based on ownership
 				const el = document.createElement("img");
@@ -109,13 +111,13 @@ export default function MapComponent({ style, className }: MapProps) {
 
 				// Create the MapLibre marker with coordinates
 				const marker = new maplibregl.Marker({ element: el })
-					.setLngLat([location.lng, location.lat])
+					.setLngLat([coords.lng, coords.lat])
 					.addTo(map.current);
 
 				markersRef.current.push(marker);
 			}
 		}
-	}, [locations, userLocationIds, user?.id]);
+	}, [locations, userLocationIds]);
 
 	return (
 		<div

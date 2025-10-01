@@ -1,18 +1,23 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMarketplaceListings } from "../hooks/useMarketplace";
-import { marketplaceQueries } from "../lib/queryFunctions";
-import { queryKeys } from "../lib/queryKeys";
-import { queryClient } from "../providers/QueryClientProvider";
+import {
+	useMarketplaceListings,
+	marketplaceQueryKeys,
+	marketplaceQueries,
+} from "../hooks/entities/useMarketplace";
+import { requireAuth, requireOnboarding } from "../lib/routeGuards";
 import "./marketplace.css";
 
 export const Route = createFileRoute("/marketplace")({
+	beforeLoad: async ({ context }) => {
+		await requireAuth(context);
+		await requireOnboarding(context);
+	},
 	component: Marketplace,
-	loader: async ({ abortController }) => {
+	loader: async ({ context }) => {
 		// Ensure data in TanStack Query cache
-		const listings = await queryClient.ensureQueryData({
-			queryKey: queryKeys.marketplace.listings(),
-			queryFn: ({ signal }) =>
-				marketplaceQueries.getListings(signal || abortController.signal),
+		const listings = await context.queryClient.ensureQueryData({
+			queryKey: marketplaceQueryKeys.lists(),
+			queryFn: () => marketplaceQueries.getListings(),
 			staleTime: 1000 * 60 * 3, // 3 minutes
 		});
 
@@ -26,13 +31,20 @@ export const Route = createFileRoute("/marketplace")({
 	),
 	errorComponent: ({ error }) => {
 		const navigate = useNavigate();
+		const { queryClient } = Route.useRouteContext();
+
 		return (
 			<div className="error-container">
 				<h2>⚠️ Error Loading Marketplace</h2>
 				<p>{error.message}</p>
 				<button
 					type="button"
-					onClick={() => navigate({ to: "/marketplace", replace: true })}
+					onClick={async () => {
+						await queryClient.invalidateQueries({
+							queryKey: marketplaceQueryKeys.lists(),
+						});
+						navigate({ to: "/marketplace" });
+					}}
 				>
 					Retry
 				</button>

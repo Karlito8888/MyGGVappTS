@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { useActiveMessagesHeaders } from "../hooks/useMessagesHeaders";
+import { useMessagingActiveHeaders } from "../hooks";
 import "./header.css";
 
 const Header = () => {
-	const { data: messages = [] } = useActiveMessagesHeaders();
+	const { data: messages = [] } = useMessagingActiveHeaders();
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [isVisible, setIsVisible] = useState(true);
 	const [currentGradient, setCurrentGradient] = useState("");

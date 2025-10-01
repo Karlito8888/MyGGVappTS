@@ -1,73 +1,82 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
-	Coins,
-	MessageCircle,
-	Building,
-	Globe,
-	Settings,
-	Clock,
-	MapPin,
-	Loader,
 	AlertTriangle,
+	Building,
+	Clock,
+	Coins,
+	Globe,
+	Loader,
+	MapPin,
+	MessageCircle,
+	Settings,
 } from "lucide-react";
 
-import { useAuth } from "../hooks/useAuth";
-import { useUserAllBusinesses, useUserServices } from "../hooks";
-import { useUserRealtimeSync } from "../hooks/useRealtimeSync";
 import Avatar from "../components/Avatar";
-import type { ProfileLoaderData } from "../lib/loaders";
-import { businessesQueries, servicesQueries } from "../lib/queryFunctions";
-import { queryKeys } from "../lib/queryKeys";
-import { supabase } from "../lib/supabase";
-import { queryClient } from "../providers/QueryClientProvider";
+import { useAuth, useBusinesses, useServices } from "../hooks";
+
+// Import query functions from entity hooks
+import { businessesQueries } from "../hooks/entities/useBusinesses";
+import { servicesQueries } from "../hooks/entities/useServices";
+
+// Define loader data type
+type ProfileLoaderData = {
+	userServices: any[];
+	insideBusinesses: any[];
+	outsideBusinesses: any[];
+};
+import { queryKeys } from "../hooks/utils/queryKeys";
+import { requireAuth, requireOnboarding } from "../lib/routeGuards";
 import "./profile.css";
 
 export const Route = createFileRoute("/profile")({
+	beforeLoad: async ({ context }) => {
+		await requireAuth(context);
+		await requireOnboarding(context);
+	},
 	component: Profile,
-	loader: async ({ abortController }): Promise<ProfileLoaderData> => {
-		// Get current user from Supabase auth (fallback for loader)
-		const {
-			data: { user },
-			error,
-		} = await supabase.auth.getUser();
+	loader: async ({ context }): Promise<ProfileLoaderData> => {
+		try {
+			// Get current session instead of getUser to avoid session missing errors
+			const {
+				data: { session },
+				error,
+			} = await context.supabase.auth.getSession();
 
-		if (error || !user) {
+			if (error || !session?.user) {
+				return {
+					userServices: [],
+					insideBusinesses: [],
+					outsideBusinesses: [],
+				};
+			}
+
+			const user = session.user;
+
+			// Ensure user data in TanStack Query cache
+			const [userServices, insideBusinesses, outsideBusinesses] =
+				await Promise.all([
+					context.queryClient.ensureQueryData({
+						queryKey: queryKeys.services.byUser(user.id),
+						queryFn: () => servicesQueries.getByUser(user.id),
+						staleTime: 1000 * 60 * 5,
+					}),
+					context.queryClient.ensureQueryData({
+						queryKey: queryKeys.userInside.byUser(user.id),
+						queryFn: () => businessesQueries.getUserInside(user.id),
+						staleTime: 1000 * 60 * 5,
+					}),
+					context.queryClient.ensureQueryData({
+						queryKey: queryKeys.userOutside.byUser(user.id),
+						queryFn: () => businessesQueries.getUserOutside(user.id),
+						staleTime: 1000 * 60 * 5,
+					}),
+				]);
+
+			return { userServices, insideBusinesses, outsideBusinesses };
+		} catch (error) {
+			console.error("Profile loader error:", error);
 			return { userServices: [], insideBusinesses: [], outsideBusinesses: [] };
 		}
-
-		// Ensure user data in TanStack Query cache
-		const [userServices, insideBusinesses, outsideBusinesses] =
-			await Promise.all([
-				queryClient.ensureQueryData({
-					queryKey: queryKeys.services.user(user.id),
-					queryFn: ({ signal }) =>
-						servicesQueries.getByUser(
-							user.id,
-							signal || abortController.signal,
-						),
-					staleTime: 1000 * 60 * 5,
-				}),
-				queryClient.ensureQueryData({
-					queryKey: queryKeys.businesses.userInside(user.id),
-					queryFn: ({ signal }) =>
-						businessesQueries.getUserInside(
-							user.id,
-							signal || abortController.signal,
-						),
-					staleTime: 1000 * 60 * 5,
-				}),
-				queryClient.ensureQueryData({
-					queryKey: queryKeys.businesses.userOutside(user.id),
-					queryFn: ({ signal }) =>
-						businessesQueries.getUserOutside(
-							user.id,
-							signal || abortController.signal,
-						),
-					staleTime: 1000 * 60 * 5,
-				}),
-			]);
-
-		return { userServices, insideBusinesses, outsideBusinesses };
 	},
 	pendingComponent: () => (
 		<div className="loading-container">
@@ -89,12 +98,9 @@ export const Route = createFileRoute("/profile")({
 function Profile() {
 	const { user, loading } = useAuth();
 
-	// Enable realtime sync for user data
-	useUserRealtimeSync(user?.id || "");
-
 	// Use optimized hooks for user data
-	const { data: userServices = [] } = useUserServices(user?.id || "");
-	const { insideBusinesses, outsideBusinesses } = useUserAllBusinesses(
+	const { services: userServices = [] } = useServices().byUser(user?.id || "");
+	const { insideBusinesses, outsideBusinesses } = useBusinesses().byUser(
 		user?.id || "",
 	);
 
@@ -223,7 +229,7 @@ function Profile() {
 						<Settings className="inline-icon" size={20} /> My Services
 					</h2>
 					<div className="services-list">
-						{userServices.map((service) => (
+						{userServices.map((service: any) => (
 							<div key={service.id} className="service-item">
 								<h3 className="service-name">
 									{service.description || "Service"}
@@ -260,7 +266,7 @@ function Profile() {
 						GGV)
 					</h2>
 					<div className="businesses-list">
-						{insideBusinesses.map((business) => (
+						{insideBusinesses.map((business: any) => (
 							<div key={business.id} className="business-item">
 								<h3 className="business-name">{business.business_name}</h3>
 								{business.description && (
@@ -293,7 +299,7 @@ function Profile() {
 						🌐 My Businesses (Outside Community)
 					</h2>
 					<div className="businesses-list">
-						{outsideBusinesses.map((business) => (
+						{outsideBusinesses.map((business: any) => (
 							<div key={business.id} className="business-item">
 								<h3 className="business-name">{business.business_name}</h3>
 								{business.description && (

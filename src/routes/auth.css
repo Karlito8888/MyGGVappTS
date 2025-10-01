@@ -1,11 +1,15 @@
-/* Auth Page Styles */
+/* Auth Page Styles - Optimized */
 .auth-container {
 	min-height: 100vh;
-	background-color: #f9fafb;
+	background-color: var(--color-dark);
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	padding: 3rem 1rem;
+	padding: var(--spacing-xxl) var(--spacing-md);
+	position: relative !important;
+	z-index: 10000 !important;
+	pointer-events: auto !important;
+	isolation: isolate !important;
 }
 
 .auth-wrapper {
@@ -14,21 +18,140 @@
 	max-width: 28rem;
 }
 
+.auth-logo {
+	display: block;
+	margin: 0 auto;
+	width: 120px;
+	height: auto;
+	text-align: center;
+	margin-bottom: 0;
+}
+
 .auth-form-container {
-	margin: 2rem auto 0;
+	margin: var(--spacing-xl) auto 0;
 	width: 100%;
 	max-width: 28rem;
 }
 
 .auth-form {
-	background-color: white;
-	padding: 2rem 1rem;
-	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-	border-radius: 0.5rem;
+	background-color: #1f2937;
+	padding: var(--spacing-xl) var(--spacing-md);
+	box-shadow: var(--shadow-lg);
+	border-radius: var(--radius-lg);
+	border: 1px solid #374151;
 }
 
 @media (min-width: 640px) {
 	.auth-form {
-		padding: 2rem 2.5rem;
+		padding: var(--spacing-xl) var(--spacing-xl);
 	}
+}
+
+/* Supabase Auth UI overrides - More specific selectors */
+.auth-form-container {
+	position: relative !important;
+	z-index: 10001 !important;
+}
+
+.auth-form {
+	position: relative !important;
+	z-index: 10002 !important;
+}
+
+.auth-form .auth-form-element {
+	pointer-events: auto !important;
+	position: relative !important;
+	z-index: 10003 !important;
+}
+
+.auth-form .auth-button,
+.auth-form .auth-input,
+.auth-form .supabase-auth-ui_ui-button,
+.auth-form .supabase-auth-ui_ui-input {
+	pointer-events: auto !important;
+	cursor: pointer !important;
+	position: relative !important;
+	z-index: 10004 !important;
+}
+
+.auth-form .supabase-auth-ui_ui-input:focus {
+	pointer-events: auto !important;
+	cursor: text !important;
+	position: relative !important;
+	z-index: 10005 !important;
+}
+
+.auth-form .supabase-auth-ui_ui-button:hover {
+	pointer-events: auto !important;
+	cursor: pointer !important;
+	position: relative !important;
+	z-index: 10004 !important;
+}
+
+.auth-form .auth-input {
+	cursor: text !important;
+}
+
+.auth-form .supabase-auth-ui_ui-button {
+	transition: all var(--transition-base) ease-in-out !important;
+	min-height: 44px !important;
+	display: block !important;
+	width: 100% !important;
+}
+
+.auth-form .supabase-auth-ui_ui-button:hover {
+	opacity: 0.9 !important;
+	transform: translateY(-1px) !important;
+}
+
+.auth-form .supabase-auth-ui_ui-input:focus {
+	outline: none !important;
+	border-color: var(--color-primary) !important;
+	box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Hover effects */
+.auth-form .supabase-auth-ui_ui-button:hover {
+	background-color: #374151 !important;
+}
+
+/* Additional pointer-events fixes for all interactive elements */
+.auth-form input,
+.auth-form button,
+.auth-form a,
+.auth-form label,
+.auth-form [role="button"],
+.auth-form [tabindex] {
+	pointer-events: auto !important;
+	cursor: pointer !important;
+	position: relative !important;
+	z-index: 10006 !important;
+}
+
+.auth-form input[type="email"],
+.auth-form input[type="password"] {
+	pointer-events: auto !important;
+	cursor: text !important;
+	position: relative !important;
+	z-index: 10007 !important;
+}
+
+.auth-form input:focus,
+.auth-form button:focus,
+.auth-form a:focus {
+	pointer-events: auto !important;
+	outline: none !important;
+	z-index: 10008 !important;
+}
+
+/* Ensure all form elements are clickable and focusable */
+.auth-form * {
+	pointer-events: auto !important;
+}
+
+.auth-form .supabase-auth-ui_ui-container,
+.auth-form .supabase-auth-ui_ui-auth-container {
+	pointer-events: auto !important;
+	position: relative !important;
+	z-index: 10002 !important;
 }

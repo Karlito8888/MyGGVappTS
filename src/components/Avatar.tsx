@@ -1,11 +1,12 @@
-import { useAuth } from "../hooks/useAuth";
-import { usePresence } from "../hooks/usePresence";
+import { useAuth, usePresence } from "../hooks";
 import "./avatar.css";
 
 interface AvatarProps {
 	size?: "sm" | "md" | "lg";
 	className?: string;
 	style?: React.CSSProperties;
+	avatar_url?: string;
+	username?: string;
 }
 
 const sizeClasses = {
@@ -24,48 +25,48 @@ export default function Avatar({
 	size = "md",
 	className = "",
 	style,
+	avatar_url: propAvatarUrl,
+	username: propUsername,
 }: AvatarProps) {
 	const { user } = useAuth();
-	const { currentUserOnline } = usePresence();
+	const { isUserOnline } = usePresence();
 
-	if (!user) {
-		return (
-			<div
-				className={`avatar avatar--placeholder ${sizeClasses[size]} ${className}`}
-				style={style}
-			>
-				<span className="avatar__placeholder-icon">👤</span>
-			</div>
-		);
-	}
+	// Use props if provided, otherwise fallback to user data
+	const avatarUrl = propAvatarUrl || user?.avatar_url;
+	const username = propUsername || user?.username || user?.full_name || "User";
+
+	// Check if current user is online
+	const currentUserOnline = user ? isUserOnline(user.id) : false;
+
+	// Default avatar image
+	const defaultAvatar = "/src/assets/logos/ggv-70.png";
 
 	return (
 		<div
 			className={`avatar ${sizeClasses[size]} ${currentUserOnline ? "avatar--online" : ""} ${className}`}
 			style={style}
 		>
-			{user.avatar_url ? (
+			{avatarUrl ? (
 				<img
-					src={user.avatar_url}
-					alt={`${user.username || user.full_name || "User"}'s avatar`}
+					src={avatarUrl}
+					alt={`${username}'s avatar`}
 					className="avatar__image"
 					width={sizePixels[size]}
 					height={sizePixels[size]}
 					onError={(e) => {
-						// Fallback to placeholder if image fails to load
+						// Fallback to default avatar if image fails to load
 						const target = e.target as HTMLImageElement;
-						target.style.display = "none";
-						const parent = target.parentElement;
-						if (parent) {
-							const placeholder = document.createElement("span");
-							placeholder.className = "avatar__placeholder-icon";
-							placeholder.textContent = "👤";
-							parent.appendChild(placeholder);
-						}
+						target.src = defaultAvatar;
 					}}
 				/>
 			) : (
-				<span className="avatar__placeholder-icon">👤</span>
+				<img
+					src={defaultAvatar}
+					alt={`${username}'s avatar`}
+					className="avatar__image"
+					width={sizePixels[size]}
+					height={sizePixels[size]}
+				/>
 			)}
 		</div>
 	);

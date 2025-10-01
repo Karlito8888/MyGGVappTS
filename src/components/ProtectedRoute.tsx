@@ -1,5 +1,6 @@
-import { redirect } from "@tanstack/react-router";
-import { useAuth } from "../hooks/useAuth";
+import { useLocation, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useAuth } from "../hooks";
 import PageLoading from "./PageLoading";
 
 interface ProtectedRouteProps {
@@ -7,15 +8,48 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-	const { user, loading } = useAuth();
+	const { user, loading, error } = useAuth();
+	const navigate = useNavigate();
+	const location = useLocation();
+	const currentPath = location.pathname;
 
-	// If no user and not loading, redirect to auth
-	if (!loading && !user) {
-		throw redirect({ to: "/auth" });
+	// Handle redirect logic
+	useEffect(() => {
+		if (loading) return; // Wait for loading to complete
+
+		// If no user and no error, redirect to auth
+		if (!user && !error) {
+			navigate({ to: "/auth" });
+			return;
+		}
+
+		// If user exists but onboarding not completed, redirect to onboarding
+		// (except if already on onboarding page)
+		if (user && !user.onboarding_completed && currentPath !== "/onboarding") {
+			navigate({ to: "/onboarding" });
+			return;
+		}
+
+		// If user completed onboarding but is on onboarding page, redirect to home
+		if (user?.onboarding_completed && currentPath === "/onboarding") {
+			navigate({ to: "/" });
+			return;
+		}
+	}, [loading, user, error, navigate, currentPath]);
+
+	// If there's an auth error, show error state
+	if (error) {
+		console.error("Auth error:", error);
+		return (
+			<div className="error-container">
+				<h2>Authentication Error</h2>
+				<p>There was a problem with authentication. Please try again.</p>
+			</div>
+		);
 	}
 
-	// If still loading, show PageLoading
-	if (loading) {
+	// If still loading or no user, show loading state
+	if (loading || !user) {
 		return <PageLoading isLoading={true} />;
 	}
 

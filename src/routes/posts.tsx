@@ -1,4 +1,5 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { requireAuth, requireOnboarding } from "../lib/routeGuards";
 import "./posts.css";
 
 interface Post {
@@ -9,6 +10,10 @@ interface Post {
 }
 
 export const Route = createFileRoute("/posts")({
+	beforeLoad: async ({ context }) => {
+		await requireAuth(context);
+		await requireOnboarding(context);
+	},
 	component: Posts,
 	loader: async ({ abortController }) => {
 		// Check if request was aborted
@@ -40,7 +45,9 @@ export const Route = createFileRoute("/posts")({
 				<p>{error.message}</p>
 				<button
 					type="button"
-					onClick={() => navigate({ to: "/posts", replace: true })}
+					onClick={() => {
+						navigate({ to: "/posts" });
+					}}
 				>
 					Retry
 				</button>
@@ -68,8 +75,6 @@ function Posts() {
 							to="/posts/$postId"
 							params={{ postId: post.id.toString() }}
 							className="read-more-link"
-							preload="intent"
-							preloadDelay={150}
 						>
 							Read More
 						</Link>

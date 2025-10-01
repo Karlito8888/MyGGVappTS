@@ -25,10 +25,11 @@
 
 ## ⚠️ Required Documentation
 **BEFORE ANY CODE CHANGES**, consult official docs:
-- React: https://react.dev/
+- For TypeScript code style and best practices: https://www.typescriptlang.org/docs/
+- For React 19 component architecture and hooks patterns: https://react.dev/
 - TanStack: https://tanstack.com/  
 - MapLibre: https://maplibre.org/maplibre-gl-js/docs/
-- Supabase: https://supabase.com/docs/guides/getting-started/quickstarts/reactjs
+- Supabase: https://supabase.com/docs/guides/getting-started/
 
 ## 🎯 Development Principles
 **DRY, KISS, MINUTIEUX, ETAPE PAR ETAPE**

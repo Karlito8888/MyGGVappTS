@@ -1,4 +1,4 @@
-import { useMinLoadingTime } from "../hooks/useMinLoadingTime";
+import { useMinLoadingTime } from "../hooks/utility/useMinLoadingTime";
 import Loading from "./Loading";
 
 interface PageLoadingProps {
@@ -7,7 +7,7 @@ interface PageLoadingProps {
 }
 
 export default function PageLoading({ isLoading, children }: PageLoadingProps) {
-	const showLoader = useMinLoadingTime(isLoading, 1000);
+	const showLoader = useMinLoadingTime(isLoading, 800);
 
 	return (
 		<main className="main-content" style={{ position: "relative" }}>

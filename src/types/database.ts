@@ -173,6 +173,7 @@ export interface PrivateMessage {
 	id: string;
 	sender_id: string;
 	receiver_id: string;
+	chat_id?: string;
 	message: string;
 	read_at?: string;
 	created_at: string;
